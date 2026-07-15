@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#173f35" />
+  <title>FindMyGuide — Go wild, with someone who knows</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="FindMyGuide home">
+      <span class="brand-mark">F</span><span>FindMyGuide</span>
+    </a>
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a href="#explore">Explore</a><a href="#how">How it works</a><a href="#stories">Field notes</a>
+    </nav>
+    <div class="header-actions">
+      <button class="text-button traveler-login" onclick="location.href='traveler-login.html'">Traveler login</button>
+      <button class="text-button" id="dashboardBtn">Guide workspace</button>
+      <button class="button button-dark" data-open="join">Join the network</button>
+      <button class="menu-button" id="menuBtn" aria-label="Open menu">☰</button>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span>●</span> India’s community of trusted nature guides</div>
+        <h1>Go wild, with someone who <em>knows.</em></h1>
+        <p>Meet local experts for birding, wildlife, herping and trails. Compare openly, check real availability, and plan a trip that feels personal.</p>
+        <form class="search-card" id="heroSearch">
+          <label><span>Search guides or places</span><input id="locationInput" type="search" list="searchSuggestions" autocomplete="off" placeholder="City, reserve, state or guide name" /><datalist id="searchSuggestions"><option value="Ravi Menon"><option value="Thattekad"><option value="Kerala"><option value="Meera Joshi"><option value="Bera"><option value="Rajasthan"><option value="Satpura"><option value="Agumbe"><option value="Sikkim"><option value="Arunachal Pradesh"><option value="Birding"><option value="Wildlife tracking"></datalist></label>
+          <label><span>What are you into?</span><select id="interestInput"><option value="all">All experiences</option><option>Birding</option><option>Wildlife</option><option>Herping</option><option>Hiking</option></select></label>
+          <button class="search-button" type="submit" aria-label="Search">↗</button>
+        </form>
+        <div class="trust-row"><span>✓ Verified profiles</span><span>✓ Direct conversations</span><span>✓ No hidden surprises</span></div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-photo" role="img" aria-label="Birder looking across a forest landscape"></div>
+        <div class="floating-card guide-chip">
+          <div class="avatar avatar-ravi"></div><div><b>Ravi Menon</b><span>Birding expert · Kerala</span></div><strong>4.9 ★</strong>
+        </div>
+        <div class="floating-card sighting-chip"><span class="mini-icon">◉</span><div><b>248 species</b><span>recorded this season</span></div></div>
+        <span class="orbit orbit-one">✦</span><span class="orbit orbit-two">⌁</span>
+      </div>
+    </section>
+
+    <section class="marquee" aria-label="Experience types"><span>BIRDING</span><b>✦</b><span>WILDLIFE</span><b>✦</b><span>HERPING</span><b>✦</b><span>FOREST TRAILS</span><b>✦</b><span>NATURE</span></section>
+
+    <section class="section explore" id="explore">
+      <div class="section-heading"><div><span class="kicker">PEOPLE WHO KNOW THE WILD</span><h2>Find your kind of guide</h2></div><a href="#explore" id="viewAll">View all 24 guides <span>↗</span></a></div>
+      <div class="filter-row" id="filters"><button class="filter active" data-filter="all">All guides</button><button class="filter" data-filter="Birding">Birding</button><button class="filter" data-filter="Wildlife">Wildlife</button><button class="filter" data-filter="Herping">Herping</button><button class="filter" data-filter="Hiking">Trails & hikes</button></div>
+      <div class="guide-grid" id="guideGrid"></div>
+    </section>
+
+    <section class="section destinations">
+      <div class="section-heading"><div><span class="kicker">FOLLOW THE SEASON</span><h2>Where the wild is calling</h2></div><p>Handpicked landscapes, best explored with someone local.</p></div>
+      <div class="destination-grid">
+        <article class="destination d1"><div><span>WINTER FAVOURITE</span><h3>Keoladeo</h3><p>Rajasthan · 14 guides</p></div></article>
+        <article class="destination d2"><div><span>BIG CAT COUNTRY</span><h3>Satpura</h3><p>Madhya Pradesh · 9 guides</p></div></article>
+        <article class="destination d3"><div><span>RAINFOREST LIFE</span><h3>Agumbe</h3><p>Karnataka · 7 guides</p></div></article>
+      </div>
+    </section>
+
+    <section class="how section" id="how">
+      <div class="how-intro"><span class="kicker light">YOUR TRIP, YOUR WAY</span><h2>From “maybe someday”<br>to <em>out there.</em></h2><p>No opaque packages. No endless WhatsApp loops. Just a simple path to the right person and a trip built around you.</p><button class="button button-lime" data-scroll="explore">Find a guide</button></div>
+      <div class="steps">
+        <article><span>01</span><div class="step-icon">⌖</div><div><h3>Share what moves you</h3><p>Tell us the place, species, pace or feeling you’re after.</p></div></article>
+        <article><span>02</span><div class="step-icon">✦</div><div><h3>Meet your best matches</h3><p>Compare verified local experts, styles and real availability.</p></div></article>
+        <article><span>03</span><div class="step-icon">↗</div><div><h3>Plan directly, go confidently</h3><p>Chat, shape the itinerary and keep every detail in one place.</p></div></article>
+      </div>
+    </section>
+
+    <section class="section story" id="stories">
+      <div class="story-photo"><div class="quote-mark">“</div></div>
+      <div class="story-copy"><span class="kicker">FIELD NOTE 07</span><blockquote>“We came looking for a hornbill. Ravi taught us how to hear the whole forest.”</blockquote><p>— Meera & Anand, Bengaluru</p><div class="story-meta"><span><b>Thattekad, Kerala</b>4 days · 86 species</span><span><b>Guided by Ravi</b>Birding & forest ecology</span></div></div>
+    </section>
+
+    <section class="section guide-cta">
+      <div><span class="kicker light">FOR GUIDES & OPERATORS</span><h2>Your work belongs<br>on a bigger map.</h2><p>Create a shareable profile, show your expertise, manage dates and stay connected with past travelers—without becoming a marketer.</p><button class="button button-lime" data-open="join">Build your guide page</button></div>
+      <div class="profile-preview"><div class="preview-cover"></div><div class="preview-body"><div class="avatar avatar-meera"></div><span class="verified">✓ VERIFIED</span><h3>Meera Joshi</h3><p>Naturalist & leopard tracker</p><div><span>Rajasthan</span><span>12 yrs exp.</span><span>4.9 ★</span></div><hr><b>Next available</b><strong>18–23 Oct</strong></div></div>
+    </section>
+  </main>
+
+  <footer><div class="brand footer-brand"><span class="brand-mark">F</span><span>FindMyGuide</span></div><p>Go farther. Tread lighter. Know more.</p><div><a href="#explore">Explore</a><a href="#how">About</a><a href="mailto:hello@findmyguide.in">Contact</a><a href="admin-login.html">Admin</a></div><small>© 2026 FindMyGuide · Made for the wild at heart.</small></footer>
+
+  <dialog id="guideDialog" class="dialog"><button class="close" aria-label="Close">×</button><div id="dialogContent"></div></dialog>
+  <dialog id="bookingDialog" class="dialog booking-dialog"><button class="close" aria-label="Close booking form">×</button><div class="booking-header"><span class="kicker">REQUEST A VERIFIED GUIDE</span><h2>Plan with <span id="bookingGuideName">your guide</span></h2><p>Choose only from dates the guide has opened.</p></div><div class="booking-layout"><section><div class="selected-guide-mini"><div class="avatar" id="bookingGuideAvatar"></div><div><b id="bookingGuideLabel"></b><span id="bookingGuideMeta"></span></div><strong id="bookingGuideRating"></strong></div><div class="booking-calendar-head"><div><h3>October 2026</h3><p>Select a start date, then an end date.</p></div><div><span><i></i>Available</span></div></div><div class="public-booking-calendar" id="publicBookingCalendar"></div><div class="date-selection" id="dateSelection">No dates selected</div></section><form id="guideBookingForm"><label>Number of travelers <b>*</b><select id="bookingTravelers" required><option value="1">1 traveler</option><option value="2" selected>2 travelers</option><option value="3">3 travelers</option><option value="4">4 travelers</option><option value="5">5 travelers</option><option value="6">6 travelers</option></select></label><label>Trip focus <b>*</b><select id="bookingFocus" required><option value="">Choose an interest</option><option>Birding</option><option>Wildlife tracking</option><option>Herping</option><option>Photography</option><option>Forest hiking</option></select></label><label>Message for your guide<textarea id="bookingMessage" placeholder="Share your experience level, target species, preferred pace, accessibility needs…"></textarea></label><div class="price-breakdown"><h3>Estimated guide fee</h3><span><i><b id="priceDays">0</b> guide days × <b id="priceDaily">₹0</b></i><strong id="priceSubtotal">₹0</strong></span><span><i>No platform fee</i><strong id="priceFee">₹0</strong></span><span class="price-total"><i>Estimated total</i><strong id="priceTotal">₹0</strong></span><small>Accommodation, permits and transport are not included unless stated by the guide. Payment is arranged directly after confirmation.</small></div><label class="booking-consent"><input type="checkbox" required><span>I understand this is a request, not a confirmed booking, and payment will be arranged directly with the guide.</span></label><button class="button button-dark" type="submit">Send booking request ↗</button><p class="payment-note">The guide will accept or decline within 24 hours. Dates are reserved only after acceptance.</p></form></div></dialog>
+  <dialog id="joinDialog" class="dialog join-dialog"><button class="close" aria-label="Close">×</button><div class="form-progress" aria-label="Application progress"><span class="active">1</span><i></i><span>2</span><i></i><span>3</span><i></i><span>4</span></div><form id="joinForm">
+    <section class="form-step active" data-step="1"><span class="kicker">STEP 1 OF 4 · ABOUT YOU</span><h2>Let’s start with you.</h2><p>This information helps us verify your identity and contact you about your application.</p><div class="two-col"><label>Full name <b>*</b><input name="name" required autocomplete="name" placeholder="As shown on your ID"></label><label>Email address <b>*</b><input name="email" type="email" required autocomplete="email" placeholder="you@example.com"></label></div><div class="two-col"><label>Phone number <b>*</b><input name="phone" type="tel" required autocomplete="tel" placeholder="+91 98765 43210"></label><label>WhatsApp number<input name="whatsapp" type="tel" placeholder="If different from phone"></label></div><div class="two-col"><label>Date of birth<input name="dob" type="date"></label><label>Languages spoken <b>*</b><input name="languages" required placeholder="English, Hindi, Malayalam"></label></div><button class="button button-dark next-step" type="button">Continue to expertise ↗</button></section>
+    <section class="form-step" data-step="2"><span class="kicker">STEP 2 OF 4 · YOUR EXPERTISE</span><h2>What do you know best?</h2><p>Select every area you actively guide. You can choose more than one.</p><fieldset class="expertise-options"><legend>Areas of expertise <b>*</b></legend><label><input type="checkbox" name="expertise" value="Birding"><span>🦜<b>Birding</b><small>Bird calls, identification, habitats</small></span></label><label><input type="checkbox" name="expertise" value="Wildlife tracking"><span>🐾<b>Wildlife tracking</b><small>Mammals, signs and tracking</small></span></label><label><input type="checkbox" name="expertise" value="Herping"><span>🐍<b>Herping</b><small>Reptiles and amphibians</small></span></label><label><input type="checkbox" name="expertise" value="Hiking"><span>🥾<b>Trails & hiking</b><small>Forest and mountain trails</small></span></label><label><input type="checkbox" name="expertise" value="Photography"><span>📷<b>Photography</b><small>Wildlife and nature photography</small></span></label><label><input type="checkbox" name="expertise" value="Natural history"><span>🌿<b>Natural history</b><small>Ecology, insects and plants</small></span></label></fieldset><div class="two-col"><label>Years of guiding experience <b>*</b><input name="experience" type="number" min="0" max="60" required placeholder="e.g. 8"></label><label>Preferred group size<select name="groupSize"><option>1–2 travelers</option><option>3–6 travelers</option><option>7–12 travelers</option><option>12+ travelers</option></select></label></div><label>Training, permits or certifications<textarea name="certifications" placeholder="Naturalist training, first aid, forest permits, awards…"></textarea></label><div class="step-actions"><button class="button back-step" type="button">← Back</button><button class="button button-dark next-step" type="button">Continue to locations ↗</button></div></section>
+    <section class="form-step" data-step="3"><span class="kicker">STEP 3 OF 4 · WHERE YOU WORK</span><h2>Put your work on the map.</h2><p>Add your base and the parks, forests or districts where you regularly guide.</p><div class="two-col"><label>Home base / primary location <b>*</b><input name="location" required placeholder="Thattekad, Kerala"></label><label>States covered <b>*</b><input name="states" required placeholder="Kerala, Karnataka, Tamil Nadu"></label></div><label>Work locations <b>*</b><textarea name="workLocations" required placeholder="List reserve forests, national parks, sanctuaries and districts—one per line"></textarea></label><div class="two-col"><label>Tour season<select name="season"><option>All year</option><option>October–March</option><option>April–September</option><option>Custom / varies by location</option></select></label><label>Tour style<select name="tourStyle"><option>Private / customised</option><option>Small groups</option><option>Both private and groups</option></select></label></div><div class="two-col"><label>Starting price per day (₹)<input name="price" type="number" min="0" placeholder="5500"></label><label>eBird / portfolio URL<input name="portfolio" type="url" placeholder="https://"></label></div><div class="step-actions"><button class="button back-step" type="button">← Back</button><button class="button button-dark next-step" type="button">Continue to photos ↗</button></div></section>
+    <section class="form-step" data-step="4"><span class="kicker">STEP 4 OF 4 · PHOTOS & STORY</span><h2>Show travelers your world.</h2><p>Clear, authentic photos make a profile easier to trust. JPG, PNG or WebP; up to 5 MB each.</p><div class="upload-grid"><label class="upload-box">Profile photo <b>*</b><input name="profilePhoto" type="file" accept="image/jpeg,image/png,image/webp" required><span class="upload-preview">＋<small>Square portrait works best</small></span></label><label class="upload-box work-upload">Work and location photos <b>*</b><input name="workPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple required><span class="upload-preview">＋<small>Upload 3–10 field photos</small></span></label></div><div id="fileSummary" class="file-summary" aria-live="polite"></div><label>Your guiding story <b>*</b><textarea name="bio" required minlength="80" maxlength="800" placeholder="Tell travelers how you began, what makes your region special, and the kind of trips you enjoy leading…"></textarea><small class="field-help">Minimum 80 characters</small></label><label class="consent"><input type="checkbox" required><span>I confirm this information is accurate and I have permission to use the uploaded photos.</span></label><div class="step-actions"><button class="button back-step" type="button">← Back</button><button class="button button-dark" type="submit">Submit application ↗</button></div></section>
+  </form></dialog>
+  <dialog id="workspaceDialog" class="dialog workspace-dialog"><button class="close" aria-label="Close">×</button><div class="workspace-head"><div><span class="kicker">GUIDE ADMIN</span><h2>Good morning, Ravi.</h2></div><button class="button button-dark" id="addTour">+ Add a tour</button></div><div class="workspace-tabs" role="tablist"><button class="active" data-admin-tab="calendar">Calendar</button><button data-admin-tab="bookings">Bookings</button><button data-admin-tab="reviews">Reviews</button><button data-admin-tab="profile">Profile</button></div><div class="workspace-stats"><span><b>8</b>Trip enquiries</span><span><b>4.9</b>Verified rating</span><span><b>68%</b>October booked</span></div>
+    <section class="admin-panel active" data-panel="calendar"><div class="calendar-head"><div><h3>October 2026</h3><p>Click a date to cycle: available → booked → blocked.</p></div><div class="calendar-legend"><span><i class="available"></i>Available</span><span><i class="booked"></i>Booked</span><span><i class="blocked"></i>Blocked</span></div></div><div class="availability-calendar" id="availabilityCalendar"></div><div class="calendar-summary"><span><b id="availableCount">0</b> available days</span><span><b id="bookedCount">0</b> booked days</span><span><b id="blockedCount">0</b> blocked days</span><button class="button button-dark" id="saveCalendar">Save availability</button></div></section>
+    <section class="admin-panel" data-panel="bookings"><h3>Upcoming bookings</h3><div class="schedule"><article><time>18 <small>OCT</small></time><div><b>Thattekad birding immersion</b><span>Booking FMG-1028 · 2 travelers · 4 days</span></div><em>Confirmed</em></article><article><time>27 <small>OCT</small></time><div><b>Western Ghats dawn walk</b><span>Open group · 6 places</span></div><em class="open-status">Published</em></article></div></section>
+    <section class="admin-panel" data-panel="reviews"><div class="review-summary"><strong>4.9</strong><div><span class="review-stars">★★★★★</span><p>38 verified booking reviews</p></div></div><article class="review-card"><div><b>Meera S.</b><span>★★★★★</span></div><p>Ravi’s knowledge of calls changed the way we listened to the forest. Patient, generous and exceptionally prepared.</p><small>✓ Verified booking · Thattekad · June 2026</small><button>Public reply</button></article><article class="review-card"><div><b>Arjun & family</b><span>★★★★★</span></div><p>Wonderful with our children and very thoughtful about pacing the day.</p><small>✓ Verified booking · Kerala · March 2026</small><button>Public reply</button></article></section>
+    <section class="admin-panel" data-panel="profile"><h3>Profile completeness</h3><div class="profile-complete"><b>86%</b><span><i></i></span></div><p>Your profile is live. Add two more location photos and a second work language to improve matching.</p><button class="button button-dark">Edit public profile</button></section>
+  </dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>

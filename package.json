@@ -1,0 +1,12 @@
+{
+  "name": "findmyguide",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch server.mjs",
+    "start": "node server.mjs",
+    "build": "node --check server.mjs && node --check backend/database.mjs && node --check app.js && node --check traveler-login.js && node --check traveler-panel.js && node --check guide-login.js && node --check guide-admin.js && node --check admin-login.js && node --check website-admin.js && node --check invite.js && node --check payment.js",
+    "test": "node --test backend/*.test.mjs"
+  }
+}
