@@ -14,6 +14,28 @@ Open `http://127.0.0.1:3000`.
 
 The SQLite database is created automatically at `data/findmyguide.sqlite` and seeded on first startup.
 
+## Project structure
+
+```text
+FindmyGuide/
+├── frontend/
+│   └── public/              # HTML, CSS, and browser-side JavaScript
+├── backend/
+│   ├── server.mjs           # HTTP entry point and static frontend serving
+│   ├── database/
+│   │   └── database.mjs     # SQLite schema, migrations, seed data, auth hashing
+│   ├── routes/
+│   │   ├── context.mjs      # Shared request, session, response, and DTO helpers
+│   │   └── index.mjs        # API route registry and handlers
+│   └── tests/
+│       └── api.test.mjs     # End-to-end API integration tests
+├── data/                    # Runtime SQLite files; excluded from Git
+├── package.json
+└── README.md
+```
+
+Public URLs remain unchanged. The backend serves assets from `frontend/public` and handles all `/api/*` requests through `backend/routes`.
+
 ## Seeded development accounts
 
 | Role | Email | Password |

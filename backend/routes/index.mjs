@@ -1,57 +1,4 @@
-import http from 'node:http';
-import { readFile, stat } from 'node:fs/promises';
-import { extname, join, normalize } from 'node:path';
-import { createHash, randomBytes } from 'node:crypto';
-import { db, json, migrate, seed, verifyPassword, hashPassword } from './backend/database.mjs';
-
-const HOST = process.env.HOST || '127.0.0.1';
-const PORT = Number(process.env.PORT || 3000);
-const SESSION_COOKIE = 'fmg_session';
-migrate();
-seed();
-
-const mime = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml' };
-const sha256 = text => createHash('sha256').update(text).digest('hex');
-const reply = (res, status, body, headers = {}) => { res.writeHead(status, { 'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...headers }); res.end(JSON.stringify(body)); };
-const fail = (res, status, message, details) => reply(res, status, { error: message, ...(details ? { details } : {}) });
-const parseCookies = req => Object.fromEntries(String(req.headers.cookie || '').split(';').filter(Boolean).map(part => { const i=part.indexOf('='); return [part.slice(0,i).trim(), decodeURIComponent(part.slice(i+1))]; }));
-const publicUser = row => row && ({ id:row.id, role:row.role, name:row.name, email:row.email, phone:row.phone, status:row.status });
-const cleanText = (value, max=500) => String(value ?? '').trim().slice(0,max);
-
-async function body(req) {
-  let raw = '';
-  for await (const chunk of req) { raw += chunk; if (raw.length > 1_000_000) throw Object.assign(new Error('Request too large'), { status:413 }); }
-  if (!raw) return {};
-  try { return JSON.parse(raw); } catch { throw Object.assign(new Error('Invalid JSON'), { status:400 }); }
-}
-
-function sessionUser(req) {
-  const token = parseCookies(req)[SESSION_COOKIE];
-  if (!token) return null;
-  return db.prepare(`SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at > datetime('now') AND u.status='active'`).get(sha256(token)) || null;
-}
-
-function requireUser(req, res, roles = []) {
-  const user = sessionUser(req);
-  if (!user) { fail(res, 401, 'Authentication required'); return null; }
-  if (roles.length && !roles.includes(user.role)) { fail(res, 403, 'You do not have permission for this action'); return null; }
-  return user;
-}
-
-function createSession(res, userId) {
-  const token = randomBytes(32).toString('base64url');
-  db.prepare("DELETE FROM sessions WHERE expires_at <= datetime('now')").run();
-  db.prepare("INSERT INTO sessions(user_id,token_hash,expires_at) VALUES(?,?,datetime('now','+7 days'))").run(userId, sha256(token));
-  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800`);
-}
-
-function guideDto(row) {
-  return { id:row.id,name:row.display_name,location:row.primary_location,workLocations:json(row.work_locations_json),expertise:json(row.expertise_json),languages:json(row.languages_json),yearsExperience:row.years_experience,bio:row.bio,dailyRate:row.daily_rate,profilePhoto:row.profile_photo,workPhotos:json(row.work_photos_json),rating:row.rating,reviewCount:row.review_count,verificationStatus:row.verification_status };
-}
-
-function bookingDto(row) {
-  return { id:row.id,reference:row.reference,travelerId:row.traveler_id,guideId:row.guide_id,guideName:row.guide_name,startDate:row.start_date,endDate:row.end_date,travelers:row.travelers,focus:row.focus,message:row.message,dailyRate:row.daily_rate,subtotal:row.subtotal,serviceFee:row.service_fee,total:row.total,status:row.status,paymentArrangement:'direct_with_guide',paymentRecordStatus:row.payment_record_status||'not_recorded',amountRecorded:row.amount_recorded||0,paymentNote:row.payment_note||'',createdAt:row.created_at };
-}
+import { body, bookingDto, cleanText, createSession, db, fail, guideDto, hashPassword, json, parseCookies, publicUser, randomBytes, reply, requireUser, sessionUser, sha256, verifyPassword, SESSION_COOKIE } from './context.mjs';
 
 const routes = [];
 const route = (method, pattern, handler) => routes.push({ method, pattern, handler });
@@ -135,25 +82,12 @@ route('POST', /^\/api\/payments\/mock-confirm$/, (req,res) => { if(!requireUser(
 
 route('POST', /^\/api\/reviews$/, async (req,res) => { const traveler=requireUser(req,res,['traveler']);if(!traveler)return;const data=await body(req),booking=db.prepare("SELECT * FROM bookings WHERE (id=? OR reference=?) AND traveler_id=? AND status='completed'").get(Number(data.bookingId)||-1,String(data.bookingId||''),traveler.id);if(!booking)return fail(res,403,'Only completed bookings can be reviewed');const ratings=['overall','knowledge','communication','organisation','value'];if(ratings.some(k=>Number(data[k])<1||Number(data[k])>5)||cleanText(data.title,80).length<3||cleanText(data.body,1200).length<30)return fail(res,400,'Complete all ratings, title and review text');try{const result=db.prepare(`INSERT INTO reviews(booking_id,traveler_id,guide_id,overall,knowledge,communication,organisation,value,title,body,photos_json) VALUES(?,?,?,?,?,?,?,?,?,?,?)`).run(booking.id,traveler.id,booking.guide_id,...ratings.map(k=>Number(data[k])),cleanText(data.title,80),cleanText(data.body,1200),JSON.stringify(data.photos||[]));const stats=db.prepare("SELECT avg(overall) rating,count(*) count FROM reviews WHERE guide_id=? AND status='published'").get(booking.guide_id);db.prepare('UPDATE guide_profiles SET rating=?,review_count=? WHERE id=?').run(Number(stats.rating.toFixed(1)),stats.count,booking.guide_id);reply(res,201,{id:Number(result.lastInsertRowid),verified:true});}catch(e){if(String(e.message).includes('UNIQUE'))return fail(res,409,'This booking has already been reviewed');throw e;} });
 
-async function serveStatic(req,res,url) {
-  let pathname = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname);
-  const safe = normalize(pathname).replace(/^([.][.][/\\])+/, '').replace(/^[/\\]+/, '');
-  if (safe.startsWith('backend/') || safe.startsWith('data/') || safe.startsWith('.')) return false;
-  const file = join(process.cwd(), safe);
-  try { const info=await stat(file); if(!info.isFile())return false;const bytes=await readFile(file);res.writeHead(200,{ 'Content-Type':mime[extname(file)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','X-Frame-Options':'SAMEORIGIN','Referrer-Policy':'strict-origin-when-cross-origin' });res.end(bytes);return true;} catch { return false; }
-}
-
-const server = http.createServer(async (req,res) => {
-  const url=new URL(req.url,`http://${req.headers.host||`${HOST}:${PORT}`}`);
+export async function handleApiRequest(req,res,url) {
   try {
-    if(url.pathname.startsWith('/api/')){
-      const found=routes.find(r=>r.method===req.method&&r.pattern.test(url.pathname));
-      if(!found)return fail(res,404,'API endpoint not found');
-      const match=url.pathname.match(found.pattern);return await found.handler(req,res,url,match);
-    }
-    if(await serveStatic(req,res,url))return;
-    res.writeHead(404,{'Content-Type':'text/plain; charset=utf-8'});res.end('Not found');
+    const found=routes.find(r=>r.method===req.method&&r.pattern.test(url.pathname));
+    if(!found)return fail(res,404,'API endpoint not found');
+    const match=url.pathname.match(found.pattern);
+    return await found.handler(req,res,url,match);
   } catch(error) { console.error(error); if(!res.headersSent)fail(res,error.status||500,error.status?error.message:'Internal server error');else res.end(); }
-});
-
-server.listen(PORT,HOST,()=>console.log(`FindMyGuide running at http://${HOST}:${PORT}`));
+}
+// FindMyGuide API route registry.

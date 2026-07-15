@@ -57,3 +57,4 @@ document.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>document.que
 document.querySelector('#viewAll').onclick=e=>{e.preventDefault();document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('active',x.dataset.filter==='all'));renderGuides()};
 document.querySelector('#menuBtn').onclick=()=>{document.querySelector('#explore').scrollIntoView()};
 function showToast(message){const t=document.querySelector('#toast');t.textContent=message;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove('show'),3000)}
+// FindMyGuide frontend module.

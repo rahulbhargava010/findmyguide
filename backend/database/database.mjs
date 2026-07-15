@@ -247,3 +247,4 @@ export function seed() {
 export const json = value => {
   try { return JSON.parse(value || '[]'); } catch { return []; }
 };
+// SQLite schema, migrations, seed data, and password helpers.
