@@ -1,6 +1,6 @@
-# FindMyGuide
+# Chirps & Roar
 
-FindMyGuide is a two-sided nature-guide marketplace with separate traveler, guide, and platform-admin experiences. The application now runs through a Node.js API backed by SQLite.
+Chirps & Roar is a two-sided nature-guide marketplace with separate traveler, guide, and platform-admin experiences. The application now runs through a Node.js API backed by SQLite.
 
 ## Run locally
 

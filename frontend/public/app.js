@@ -4,7 +4,7 @@ const guides=[
  {id:3,name:'Tashi Norbu',type:'Hiking',location:'Eaglenest, Arunachal',tag:'LOCAL EXPERT',rating:'4.8',reviews:19,experience:'10 yrs',price:'₹6,200',image:'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=85',chips:['High altitude','Birding'],bio:'Born in the eastern Himalaya, Tashi combines mountain craft with a remarkable eye for birds. His trips balance early starts, warm camp meals and local stories.'},
  {id:4,name:'Ananya Rao',type:'Herping',location:'Agumbe, Karnataka',tag:'NIGHT TRAILS',rating:'4.9',reviews:22,experience:'8 yrs',price:'₹4,800',image:'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=800&q=85',chips:['Reptiles','Amphibians'],bio:'A conservation educator fascinated by the small, secretive lives of the rainforest. Ananya leads safe night walks with a strong leave-no-trace ethic.'},
  {id:5,name:'Kabir Singh',type:'Wildlife',location:'Satpura, Madhya Pradesh',tag:'FAMILY FRIENDLY',rating:'4.7',reviews:31,experience:'9 yrs',price:'₹6,800',image:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=85',chips:['Mammals','Canoe safari'],bio:'Kabir makes central India’s forests vivid for curious travelers of every age, connecting animal signs, trees and local history into one memorable story.'},
- {id:6,name:'Lhamo Dolma',type:'Hiking',location:'Sikkim',tag:'NEW ON FMG',rating:'5.0',reviews:12,experience:'7 yrs',price:'₹5,900',image:'https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?auto=format&fit=crop&w=800&q=85',chips:['Alpine flora','Slow travel'],bio:'Lhamo leads intimate trails through Sikkim’s rhododendron country, with a love for alpine botany, village kitchens and trips that leave room to pause.'}
+ {id:6,name:'Lhamo Dolma',type:'Hiking',location:'Sikkim',tag:'NEW ON CR',rating:'5.0',reviews:12,experience:'7 yrs',price:'₹5,900',image:'https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?auto=format&fit=crop&w=800&q=85',chips:['Alpine flora','Slow travel'],bio:'Lhamo leads intimate trails through Sikkim’s rhododendron country, with a love for alpine botany, village kitchens and trips that leave room to pause.'}
 ];
 
 const grid=document.querySelector('#guideGrid');
@@ -57,4 +57,4 @@ document.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>document.que
 document.querySelector('#viewAll').onclick=e=>{e.preventDefault();document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('active',x.dataset.filter==='all'));renderGuides()};
 document.querySelector('#menuBtn').onclick=()=>{document.querySelector('#explore').scrollIntoView()};
 function showToast(message){const t=document.querySelector('#toast');t.textContent=message;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove('show'),3000)}
-// FindMyGuide frontend module.
+// Chirps & Roar frontend module.

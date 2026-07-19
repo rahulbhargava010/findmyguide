@@ -54,4 +54,4 @@ const server = http.createServer(async (req, res) => {
   res.end('Not found');
 });
 
-server.listen(PORT, HOST, () => console.log(`FindMyGuide running at http://${HOST}:${PORT}`));
+server.listen(PORT, HOST, () => console.log(`Chirps & Roar running at http://${HOST}:${PORT}`));

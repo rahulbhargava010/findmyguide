@@ -90,4 +90,4 @@ export async function handleApiRequest(req,res,url) {
     return await found.handler(req,res,url,match);
   } catch(error) { console.error(error); if(!res.headersSent)fail(res,error.status||500,error.status?error.message:'Internal server error');else res.end(); }
 }
-// FindMyGuide API route registry.
+// Chirps & Roar API route registry.
