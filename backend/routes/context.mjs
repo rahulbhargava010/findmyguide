@@ -26,23 +26,23 @@ async function body(req) {
   catch { throw Object.assign(new Error('Invalid JSON'), {status:400}); }
 }
 
-function sessionUser(req) {
+async function sessionUser(req) {
   const token = parseCookies(req)[SESSION_COOKIE];
   if (!token) return null;
-  return db.prepare(`SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at > datetime('now') AND u.status='active'`).get(sha256(token)) || null;
+  return await db.prepare(`SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at > datetime('now') AND u.status='active'`).get(sha256(token)) || null;
 }
 
-function requireUser(req, res, roles = []) {
-  const user = sessionUser(req);
+async function requireUser(req, res, roles = []) {
+  const user = await sessionUser(req);
   if (!user) { fail(res,401,'Authentication required'); return null; }
   if (roles.length && !roles.includes(user.role)) { fail(res,403,'You do not have permission for this action'); return null; }
   return user;
 }
 
-function createSession(res, userId) {
+async function createSession(res, userId) {
   const token = randomBytes(32).toString('base64url');
-  db.prepare("DELETE FROM sessions WHERE expires_at <= datetime('now')").run();
-  db.prepare("INSERT INTO sessions(user_id,token_hash,expires_at) VALUES(?,?,datetime('now','+7 days'))").run(userId,sha256(token));
+  await db.prepare("DELETE FROM sessions WHERE expires_at <= datetime('now')").run();
+  await db.prepare("INSERT INTO sessions(user_id,token_hash,expires_at) VALUES(?,?,datetime('now','+7 days'))").run(userId,sha256(token));
   res.setHeader('Set-Cookie',`${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800`);
 }
 
