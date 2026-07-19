@@ -3,7 +3,7 @@ import { body, bookingDto, cleanText, createSession, db, fail, guideDto, hashPas
 const routes = [];
 const route = (method, pattern, handler) => routes.push({ method, pattern, handler });
 
-route('GET', /^\/api\/health$/, async (_req,res) => reply(res,200,{ status:'ok',service:'findmyguide-api',database:process.env.NETLIFY ? 'postgresql' : 'sqlite' }));
+route('GET', /^\/api\/health$/, async (_req,res) => reply(res,200,{ status:'ok',service:'findmyguide-api',database:(process.env.NETLIFY||process.env.AWS_LAMBDA_FUNCTION_NAME||process.env.LAMBDA_TASK_ROOT)?'sqlite-on-netlify-blobs':'sqlite' }));
 route('GET', /^\/api\/auth\/session$/, async (req,res) => reply(res,200,{ user:publicUser(await sessionUser(req)) }));
 route('POST', /^\/api\/auth\/register$/, async (req,res) => {
   const data = await body(req), name=cleanText(data.name,100), email=cleanText(data.email,180).toLowerCase(), phone=cleanText(data.phone,30), location=cleanText(data.location,150), password=String(data.password||''), interests=Array.isArray(data.interests)?data.interests.map(x=>cleanText(x,60)).filter(Boolean).slice(0,12):[];

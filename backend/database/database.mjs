@@ -1,24 +1,37 @@
 import { mkdirSync } from 'node:fs';
+import { readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 
-const isNetlify = Boolean(process.env.NETLIFY);
-let db;
-let withDatabaseContext = work => work();
+const isNetlify = typeof globalThis.Netlify !== 'undefined' || Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+const dbPath = process.env.FMG_DB_PATH || (isNetlify ? '/tmp/findmyguide.sqlite' : join(process.cwd(), 'data', 'findmyguide.sqlite'));
+mkdirSync(dirname(dbPath), { recursive: true });
+export let db = openDatabase();
+export const withDatabaseContext = work => work();
 
-if (isNetlify) {
-  const postgres = await import('./postgres.mjs');
-  db = postgres.db;
-  withDatabaseContext = postgres.withDatabaseContext;
-} else {
-  const dbPath = process.env.FMG_DB_PATH || join(process.cwd(), 'data', 'findmyguide.sqlite');
-  mkdirSync(dirname(dbPath), { recursive: true });
-  db = new DatabaseSync(dbPath);
-  db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;');
+function openDatabase() {
+  const connection = new DatabaseSync(dbPath);
+  connection.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;');
+  return connection;
 }
 
-export { db, withDatabaseContext };
+export async function loadDatabaseSnapshot(snapshot) {
+  db.close();
+  await rm(`${dbPath}-wal`, { force: true });
+  await rm(`${dbPath}-shm`, { force: true });
+  if (snapshot) await writeFile(dbPath, new Uint8Array(snapshot));
+  else await rm(dbPath, { force: true });
+  db = openDatabase();
+  migrate();
+  seed();
+}
+
+export async function createDatabaseSnapshot() {
+  db.exec('PRAGMA wal_checkpoint(TRUNCATE);');
+  const bytes = await readFile(dbPath);
+  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+}
 
 export function hashPassword(password) {
   const salt = randomBytes(16).toString('hex');

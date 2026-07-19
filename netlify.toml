@@ -20,4 +20,3 @@
   for = "/*.html"
   [headers.values]
     Cache-Control = "no-cache"
-
