@@ -3,10 +3,22 @@ import { dirname, join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 
-const dbPath = process.env.FMG_DB_PATH || join(process.cwd(), 'data', 'findmyguide.sqlite');
-mkdirSync(dirname(dbPath), { recursive: true });
-export const db = new DatabaseSync(dbPath);
-db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;');
+const isNetlify = Boolean(process.env.NETLIFY);
+let db;
+let withDatabaseContext = work => work();
+
+if (isNetlify) {
+  const postgres = await import('./postgres.mjs');
+  db = postgres.db;
+  withDatabaseContext = postgres.withDatabaseContext;
+} else {
+  const dbPath = process.env.FMG_DB_PATH || join(process.cwd(), 'data', 'findmyguide.sqlite');
+  mkdirSync(dirname(dbPath), { recursive: true });
+  db = new DatabaseSync(dbPath);
+  db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;');
+}
+
+export { db, withDatabaseContext };
 
 export function hashPassword(password) {
   const salt = randomBytes(16).toString('hex');
