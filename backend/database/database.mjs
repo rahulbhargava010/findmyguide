@@ -114,6 +114,19 @@ export function migrate() {
       reviewed_at TEXT,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
+    CREATE TABLE IF NOT EXISTS guide_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      guide_id INTEGER NOT NULL REFERENCES guide_profiles(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      location TEXT NOT NULL,
+      category TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      start_date TEXT,
+      end_date TEXT,
+      status TEXT NOT NULL DEFAULT 'published' CHECK(status IN ('draft','published','cancelled')),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(guide_id, title)
+    );
     CREATE TABLE IF NOT EXISTS availability (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       guide_id INTEGER NOT NULL REFERENCES guide_profiles(id) ON DELETE CASCADE,
@@ -219,6 +232,7 @@ export function migrate() {
     CREATE INDEX IF NOT EXISTS idx_requests_guide_status ON booking_requests(guide_id,status,created_at);
     CREATE INDEX IF NOT EXISTS idx_requests_traveler_status ON booking_requests(traveler_id,status,created_at);
     CREATE INDEX IF NOT EXISTS idx_invitations_inviter ON invitations(inviter_user_id,status,created_at);
+    CREATE INDEX IF NOT EXISTS idx_guide_events_guide_status ON guide_events(guide_id,status,start_date);
   `);
 }
 
@@ -251,6 +265,22 @@ export function seed() {
     if (!exists) db.prepare(`INSERT INTO guide_profiles(user_id,display_name,primary_location,work_locations_json,expertise_json,languages_json,years_experience,bio,daily_rate,profile_photo,rating,review_count) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`)
       .run(userId, name, location, JSON.stringify(work), JSON.stringify(expertise), JSON.stringify(['English','Hindi']), years, `${name} is a verified local naturalist and guide.`, rate, photo, rating, reviews);
   }
+  const events = [
+    ['Ravi Menon','Thattekad Dawn Bird Walk','Thattekad Bird Sanctuary, Kerala','Birding','A sunrise birdwatching walk focused on calls, endemics and rainforest ecology.','2026-10-12','2026-10-12'],
+    ['Ravi Menon','Western Ghats Endemic Birding','Munnar, Kerala','Birding','A multi-day search for endemic birds across shola forest and high-elevation grassland.','2026-11-05','2026-11-08'],
+    ['Meera Joshi','Bera Leopard Tracking Weekend','Bera, Rajasthan','Wildlife tracking','Track leopards ethically across the granite hills with photography-friendly field sessions.','2026-10-23','2026-10-25'],
+    ['Meera Joshi','Jawai Wildlife Photography Safari','Jawai, Rajasthan','Photography','Small-group wildlife photography safari for leopards, pastoral landscapes and birds.','2026-12-04','2026-12-06'],
+    ['Tashi Norbu','Eaglenest Birding Expedition','Eaglenest, Arunachal Pradesh','Birding','Eastern Himalayan birding expedition with forest walks and high-altitude field sessions.','2026-11-14','2026-11-19'],
+    ['Tashi Norbu','Dirang Himalayan Forest Trek','Dirang, Arunachal Pradesh','Hiking','A guided mountain trek through temperate forest, village trails and alpine habitats.','2026-10-17','2026-10-20'],
+    ['Ananya Rao','Agumbe Night Herping Trail','Agumbe, Karnataka','Herping','A responsible night walk for snakes, frogs and other rainforest life.','2026-08-15','2026-08-15'],
+    ['Ananya Rao','Monsoon Amphibian Walk','Agumbe Rainforest, Karnataka','Natural history','A slow monsoon nature walk focused on frogs, calls and rainforest ecology.','2026-08-22','2026-08-22'],
+    ['Kabir Singh','Satpura Canoe Safari','Satpura Tiger Reserve, Madhya Pradesh','Wildlife tracking','A family-friendly canoe and forest safari exploring mammals, tracks and river ecology.','2026-10-09','2026-10-11'],
+    ['Kabir Singh','Family Wildlife Tracking Camp','Satpura, Madhya Pradesh','Wildlife tracking','An accessible family camp covering animal signs, forest safety and natural history.','2026-11-20','2026-11-22'],
+    ['Lhamo Dolma','Sikkim Rhododendron Trek','Yuksom, Sikkim','Hiking','A small-group trek through rhododendron forest with alpine flora and village stays.','2027-04-10','2027-04-14'],
+    ['Lhamo Dolma','Khangchendzonga Alpine Flora Walk','Khangchendzonga, Sikkim','Natural history','A guided botanical hike for alpine flowers, mountain ecology and slow travel.','2027-05-08','2027-05-09']
+  ];
+  const addEvent = db.prepare(`INSERT OR IGNORE INTO guide_events(guide_id,title,location,category,description,start_date,end_date) SELECT id,?,?,?,?,?,? FROM guide_profiles WHERE display_name=?`);
+  for (const [guideName,title,location,category,description,startDate,endDate] of events) addEvent.run(title,location,category,description,startDate,endDate,guideName);
   const ravi = db.prepare("SELECT id FROM guide_profiles WHERE display_name='Ravi Menon'").get();
   const allGuides = db.prepare("SELECT id FROM guide_profiles WHERE verification_status='approved'").all();
   const addAvailability = db.prepare('INSERT OR IGNORE INTO availability(guide_id,date,status) VALUES(?,?,?)');

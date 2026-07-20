@@ -3,6 +3,21 @@ import { body, bookingDto, cleanText, createSession, db, fail, guideDto, hashPas
 const routes = [];
 const route = (method, pattern, handler) => routes.push({ method, pattern, handler });
 
+const SEARCH_ALIASES = {
+  birdwatching:['birding','birds'],birds:['birding','birdwatching'],safari:['wildlife','tracking'],
+  trek:['hiking','trail'],trekking:['hiking','trail'],hike:['hiking','trail'],snake:['herping','reptiles'],
+  snakes:['herping','reptiles'],frog:['herping','amphibians'],frogs:['herping','amphibians'],
+  leopard:['wildlife','tracking'],leopards:['wildlife','tracking'],tiger:['wildlife','tracking'],photo:['photography']
+};
+const normalizeSearch = value => String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const editDistance = (a,b) => { const row=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){let diagonal=row[0];row[0]=i;for(let j=1;j<=b.length;j++){const above=row[j],cost=a[i-1]===b[j-1]?0:1;row[j]=Math.min(row[j]+1,row[j-1]+1,diagonal+cost);diagonal=above;}}return row[b.length]; };
+const tokenMatch = (token,text) => { const words=normalizeSearch(text).split(' ').filter(Boolean);return words.some(word=>word.includes(token)||token.includes(word)||(token.length>=4&&word.length>=4&&editDistance(token,word)<=1)); };
+const queryVariants = query => normalizeSearch(query).split(' ').filter(Boolean).map(token=>[token,...(SEARCH_ALIASES[token]||[])]);
+async function searchableGuides(query='',expertise='') {
+  const rows=await db.prepare("SELECT * FROM guide_profiles WHERE verification_status='approved'").all(),events=await db.prepare("SELECT * FROM guide_events WHERE status='published' ORDER BY start_date,title").all(),variants=queryVariants(query),phrase=normalizeSearch(query),wanted=normalizeSearch(expertise);
+  return rows.map(row=>{const guide=guideDto(row),guideEvents=events.filter(event=>event.guide_id===guide.id).map(event=>({id:event.id,title:event.title,location:event.location,category:event.category,description:event.description,startDate:event.start_date,endDate:event.end_date}));const fields=[['guide name',guide.name,120],['location',[guide.location,...guide.workLocations].join(' '),80],['expertise',guide.expertise.join(' '),70],['event',guideEvents.map(event=>`${event.title} ${event.location} ${event.category}`).join(' '),95],['profile',guide.bio,25]],matched=new Set();let score=0,allMatch=true;for(const alternatives of variants){let best=0,bestLabel='';for(const [label,text,weight] of fields){if(alternatives.some(token=>tokenMatch(token,text))&&weight>best){best=weight;bestLabel=label;}}if(!best){allMatch=false;break;}score+=best;matched.add(bestLabel);}if(phrase){if(normalizeSearch(guide.name)===phrase)score+=300;else if(normalizeSearch(guide.name).startsWith(phrase))score+=180;if(guideEvents.some(event=>normalizeSearch(event.title)===phrase))score+=240;else if(guideEvents.some(event=>normalizeSearch(event.title).includes(phrase)))score+=130;if(normalizeSearch(guide.location).includes(phrase))score+=120;}const matchingEvents=guideEvents.filter(event=>!variants.length||variants.every(alternatives=>alternatives.some(token=>tokenMatch(token,`${event.title} ${event.location} ${event.category} ${event.description}`))));return{...guide,events:guideEvents,matchingEvents,matchedOn:[...matched],searchScore:score,_matches:allMatch&&(!wanted||guide.expertise.some(item=>normalizeSearch(item).includes(wanted)))};}).filter(guide=>guide._matches).sort((a,b)=>b.searchScore-a.searchScore||b.rating-a.rating||b.reviewCount-a.reviewCount).map(({_matches,...guide})=>guide);
+}
+
 route('GET', /^\/api\/health$/, async (_req,res) => reply(res,200,{ status:'ok',service:'findmyguide-api',database:(process.env.NETLIFY||process.env.AWS_LAMBDA_FUNCTION_NAME||process.env.LAMBDA_TASK_ROOT)?'sqlite-on-netlify-blobs':'sqlite' }));
 route('GET', /^\/api\/auth\/session$/, async (req,res) => reply(res,200,{ user:publicUser(await sessionUser(req)) }));
 route('POST', /^\/api\/auth\/register$/, async (req,res) => {
@@ -21,10 +36,10 @@ route('POST', /^\/api\/auth\/login$/, async (req,res) => {
 route('POST', /^\/api\/auth\/logout$/, async (req,res) => { const token=parseCookies(req)[SESSION_COOKIE]; if(token) await db.prepare('DELETE FROM sessions WHERE token_hash=?').run(sha256(token)); res.setHeader('Set-Cookie',`${SESSION_COOKIE}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0`); reply(res,200,{ok:true}); });
 
 route('GET', /^\/api\/guides$/, async (req,res,url) => {
-  const q=cleanText(url.searchParams.get('q'),100).toLowerCase(), expertise=cleanText(url.searchParams.get('expertise'),60).toLowerCase();
-  const rows=await db.prepare("SELECT * FROM guide_profiles WHERE verification_status='approved' ORDER BY rating DESC,review_count DESC").all().map(guideDto).filter(g=>{const hay=[g.name,g.location,...g.workLocations,...g.expertise].join(' ').toLowerCase();return(!q||hay.includes(q))&&(!expertise||g.expertise.some(x=>x.toLowerCase().includes(expertise)));});
-  reply(res,200,{guides:rows});
+  const q=cleanText(url.searchParams.get('q'),100),expertise=cleanText(url.searchParams.get('expertise'),60),guides=await searchableGuides(q,expertise);
+  reply(res,200,{guides,query:q,total:guides.length});
 });
+route('GET', /^\/api\/search$/, async (req,res,url) => { const q=cleanText(url.searchParams.get('q'),100),expertise=cleanText(url.searchParams.get('expertise'),60),guides=await searchableGuides(q,expertise),events=guides.flatMap(guide=>guide.matchingEvents.map(event=>({...event,guideId:guide.id,guideName:guide.name,guideLocation:guide.location,guideRating:guide.rating})));reply(res,200,{query:q,guides,events,totalGuides:guides.length,totalEvents:events.length}); });
 route('GET', /^\/api\/guides\/(\d+)$/, async (req,res,_url,match) => { const row=await db.prepare("SELECT * FROM guide_profiles WHERE id=? AND verification_status='approved'").get(Number(match[1])); if(!row)return fail(res,404,'Guide not found'); const reviews=await db.prepare("SELECT r.*,u.name traveler_name FROM reviews r JOIN users u ON u.id=r.traveler_id WHERE r.guide_id=? AND r.status='published' ORDER BY r.created_at DESC LIMIT 20").all(row.id); reply(res,200,{guide:guideDto(row),reviews}); });
 route('GET', /^\/api\/guides\/(\d+)\/availability$/, async (req,res,url,match) => { const guideId=Number(match[1]),from=url.searchParams.get('from')||'2026-10-01',to=url.searchParams.get('to')||'2026-10-31'; const dates=await db.prepare("SELECT date,status FROM availability WHERE guide_id=? AND status='available' AND date BETWEEN ? AND ? ORDER BY date").all(guideId,from,to); reply(res,200,{guideId,from,to,dates}); });
 

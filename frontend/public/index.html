@@ -33,7 +33,7 @@
         <h1>Go wild, with someone who <em>knows.</em></h1>
         <p>Meet local experts for birding, wildlife, herping and trails. Compare openly, check real availability, and plan a trip that feels personal.</p>
         <form class="search-card" id="heroSearch">
-          <label><span>Search guides or places</span><input id="locationInput" type="search" list="searchSuggestions" autocomplete="off" placeholder="City, reserve, state or guide name" /><datalist id="searchSuggestions"><option value="Ravi Menon"><option value="Thattekad"><option value="Kerala"><option value="Meera Joshi"><option value="Bera"><option value="Rajasthan"><option value="Satpura"><option value="Agumbe"><option value="Sikkim"><option value="Arunachal Pradesh"><option value="Birding"><option value="Wildlife tracking"></datalist></label>
+          <label><span>Search guides, places or events</span><input id="locationInput" type="search" list="searchSuggestions" autocomplete="off" placeholder="Guide, city, reserve, activity or event" /><datalist id="searchSuggestions"><option value="Ravi Menon"><option value="Thattekad Dawn Bird Walk"><option value="Kerala birdwatching"><option value="Bera Leopard Tracking Weekend"><option value="Jawai Photography Safari"><option value="Eaglenest Birding Expedition"><option value="Agumbe Night Herping Trail"><option value="Satpura Canoe Safari"><option value="Sikkim Rhododendron Trek"><option value="Family wildlife camp"><option value="Birding"><option value="Wildlife tracking"></datalist></label>
           <label><span>What are you into?</span><select id="interestInput"><option value="all">All experiences</option><option>Birding</option><option>Wildlife</option><option>Herping</option><option>Hiking</option></select></label>
           <button class="search-button" type="submit" aria-label="Search">↗</button>
         </form>
@@ -54,6 +54,7 @@
     <section class="section explore" id="explore">
       <div class="section-heading"><div><span class="kicker">PEOPLE WHO KNOW THE WILD</span><h2>Find your kind of guide</h2></div><a href="#explore" id="viewAll">View all 24 guides <span>↗</span></a></div>
       <div class="filter-row" id="filters"><button class="filter active" data-filter="all">All guides</button><button class="filter" data-filter="Birding">Birding</button><button class="filter" data-filter="Wildlife">Wildlife</button><button class="filter" data-filter="Herping">Herping</button><button class="filter" data-filter="Hiking">Trails & hikes</button></div>
+      <p class="search-summary" id="searchSummary" aria-live="polite"></p>
       <div class="guide-grid" id="guideGrid"></div>
     </section>
 
