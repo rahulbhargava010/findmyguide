@@ -47,7 +47,7 @@ async function createSession(res, userId) {
 }
 
 function guideDto(row) {
-  const serviceAreas=json(row.service_areas_json),workLocations=[...new Set([...json(row.work_locations_json),...serviceAreas.flatMap(area=>[area.name,area.city]).filter(Boolean)])];
+  const storedWorkLocations=json(row.work_locations_json),storedServiceAreas=json(row.service_areas_json),serviceAreas=storedServiceAreas.length?storedServiceAreas:storedWorkLocations.map(name=>({type:'region',name,city:'',state:String(row.primary_location||'').split(',').at(-1)?.trim()||'',country:'India'})),workLocations=[...new Set([...storedWorkLocations,...serviceAreas.flatMap(area=>[area.name,area.city]).filter(Boolean)])];
   return {id:row.id,name:row.display_name,location:row.primary_location,workLocations,serviceAreas,expertise:json(row.expertise_json),languages:json(row.languages_json),yearsExperience:row.years_experience,bio:row.bio,dailyRate:row.daily_rate,profilePhoto:row.profile_photo,workPhotos:json(row.work_photos_json),rating:row.rating,reviewCount:row.review_count,verificationStatus:row.verification_status,governmentVerified:Boolean(row.government_verified),verificationLevel:row.verification_level||'unverified'};
 }
 
