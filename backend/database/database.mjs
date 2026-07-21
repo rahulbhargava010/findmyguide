@@ -319,6 +319,21 @@ export function migrate() {
       utm_campaign TEXT,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
+    CREATE TABLE IF NOT EXISTS marketplace_locations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      state TEXT NOT NULL,
+      country TEXT NOT NULL DEFAULT 'India',
+      type TEXT NOT NULL DEFAULT 'city' CHECK(type IN ('city','town','district','region')),
+      description TEXT NOT NULL DEFAULT '',
+      cover_image TEXT,
+      featured INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','draft','archived')),
+      created_by INTEGER REFERENCES users(id),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(name,state,country)
+    );
     CREATE TABLE IF NOT EXISTS notifications (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -346,6 +361,7 @@ export function migrate() {
     CREATE INDEX IF NOT EXISTS idx_promotion_clicks ON promotion_clicks(promotion_link_id,clicked_at);
     CREATE INDEX IF NOT EXISTS idx_behavior_event_time ON behavior_events(event_name,created_at);
     CREATE INDEX IF NOT EXISTS idx_behavior_session ON behavior_events(session_id,created_at);
+    CREATE INDEX IF NOT EXISTS idx_marketplace_locations ON marketplace_locations(status,state,name);
   `);
   const requestColumns=new Set(db.prepare('PRAGMA table_info(booking_requests)').all().map(row=>row.name));
   if(!requestColumns.has('slot_label'))db.exec("ALTER TABLE booking_requests ADD COLUMN slot_label TEXT NOT NULL DEFAULT 'Full day'");

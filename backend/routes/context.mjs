@@ -19,7 +19,7 @@ async function body(req) {
   let raw = '';
   for await (const chunk of req) {
     raw += chunk;
-    if (raw.length > 1_000_000) throw Object.assign(new Error('Request too large'), {status:413});
+    if (raw.length > 5_500_000) throw Object.assign(new Error('Request too large; reduce the number or size of uploaded files'), {status:413});
   }
   if (!raw) return {};
   try { return JSON.parse(raw); }
