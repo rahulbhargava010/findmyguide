@@ -47,11 +47,12 @@ async function createSession(res, userId) {
 }
 
 function guideDto(row) {
-  return {id:row.id,name:row.display_name,location:row.primary_location,workLocations:json(row.work_locations_json),expertise:json(row.expertise_json),languages:json(row.languages_json),yearsExperience:row.years_experience,bio:row.bio,dailyRate:row.daily_rate,profilePhoto:row.profile_photo,workPhotos:json(row.work_photos_json),rating:row.rating,reviewCount:row.review_count,verificationStatus:row.verification_status};
+  const serviceAreas=json(row.service_areas_json),workLocations=[...new Set([...json(row.work_locations_json),...serviceAreas.flatMap(area=>[area.name,area.city]).filter(Boolean)])];
+  return {id:row.id,name:row.display_name,location:row.primary_location,workLocations,serviceAreas,expertise:json(row.expertise_json),languages:json(row.languages_json),yearsExperience:row.years_experience,bio:row.bio,dailyRate:row.daily_rate,profilePhoto:row.profile_photo,workPhotos:json(row.work_photos_json),rating:row.rating,reviewCount:row.review_count,verificationStatus:row.verification_status,governmentVerified:Boolean(row.government_verified),verificationLevel:row.verification_level||'unverified'};
 }
 
 function bookingDto(row) {
-  return {id:row.id,reference:row.reference,travelerId:row.traveler_id,guideId:row.guide_id,guideName:row.guide_name,startDate:row.start_date,endDate:row.end_date,travelers:row.travelers,focus:row.focus,message:row.message,dailyRate:row.daily_rate,subtotal:row.subtotal,serviceFee:row.service_fee,total:row.total,status:row.status,paymentArrangement:'direct_with_guide',paymentRecordStatus:row.payment_record_status||'not_recorded',amountRecorded:row.amount_recorded||0,paymentNote:row.payment_note||'',createdAt:row.created_at};
+  return {id:row.id,reference:row.reference,travelerId:row.traveler_id,guideId:row.guide_id,guideName:row.guide_name,startDate:row.start_date,endDate:row.end_date,pendingStartDate:row.pending_start_date,pendingEndDate:row.pending_end_date,travelers:row.travelers,focus:row.focus,message:row.message,dailyRate:row.daily_rate,subtotal:row.subtotal,serviceFee:row.service_fee,total:row.total,status:row.status,operationalStatus:row.operational_status||row.status,changeReason:row.change_reason,paymentArrangement:'direct_with_guide',paymentRecordStatus:row.payment_record_status||'not_recorded',amountRecorded:row.amount_recorded||0,paymentNote:row.payment_note||'',createdAt:row.created_at};
 }
 
 export { body, bookingDto, cleanText, createSession, db, fail, guideDto, hashPassword, json, parseCookies, publicUser, randomBytes, reply, requireUser, sessionUser, sha256, verifyPassword, SESSION_COOKIE };

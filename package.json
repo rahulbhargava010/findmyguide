@@ -7,11 +7,13 @@
     "dev": "node --watch backend/server.mjs",
     "netlify:dev": "netlify dev",
     "start": "node backend/server.mjs",
-    "build": "node --check backend/server.mjs && node --check backend/routes/context.mjs && node --check backend/routes/index.mjs && node --check backend/database/database.mjs && node --check frontend/public/app.js && node --check frontend/public/traveler-login.js && node --check frontend/public/traveler-panel.js && node --check frontend/public/guide-login.js && node --check frontend/public/guide-admin.js && node --check frontend/public/admin-login.js && node --check frontend/public/website-admin.js && node --check frontend/public/invite.js && node --check frontend/public/payment.js",
+    "build": "node --check backend/server.mjs && node --check backend/routes/context.mjs && node --check backend/routes/index.mjs && node --check backend/database/database.mjs && node --check frontend/public/app.js && node --check frontend/public/analytics.js && node --check frontend/public/analytics-events.js && node --check frontend/public/onboarding-extensions.js && node --check frontend/public/discover.js && node --check frontend/public/seo-discovery.js && node --check frontend/public/admin-acquisition.js && node --check frontend/public/traveler-login.js && node --check frontend/public/traveler-panel.js && node --check frontend/public/guide-login.js && node --check frontend/public/guide-admin.js && node --check frontend/public/admin-login.js && node --check frontend/public/website-admin.js && node --check frontend/public/invite.js && node --check frontend/public/payment.js",
     "test": "node --test backend/tests/*.test.mjs"
   },
   "dependencies": {
-    "@netlify/blobs": "latest"
+    "@netlify/blobs": "latest",
+    "pdfkit": "^0.19.1",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@netlify/functions": "latest"

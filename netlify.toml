@@ -20,3 +20,18 @@
   for = "/*.html"
   [headers.values]
     Cache-Control = "no-cache"
+
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/api/seo/sitemap.xml"
+  status = 200
+
+[[redirects]]
+  from = "/location/*"
+  to = "/discover.html"
+  status = 200
+
+[[redirects]]
+  from = "/specialty/*"
+  to = "/discover.html"
+  status = 200

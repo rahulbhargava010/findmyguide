@@ -135,6 +135,21 @@ export function migrate() {
       booking_id INTEGER,
       UNIQUE(guide_id, date)
     );
+    CREATE TABLE IF NOT EXISTS availability_slots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      guide_id INTEGER NOT NULL REFERENCES guide_profiles(id) ON DELETE CASCADE,
+      date TEXT NOT NULL,
+      label TEXT NOT NULL DEFAULT 'Full day',
+      start_time TEXT,
+      end_time TEXT,
+      capacity INTEGER NOT NULL DEFAULT 1 CHECK(capacity BETWEEN 1 AND 50),
+      booked_count INTEGER NOT NULL DEFAULT 0 CHECK(booked_count >= 0),
+      visibility TEXT NOT NULL DEFAULT 'public' CHECK(visibility IN ('public','private')),
+      status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','blocked')),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(guide_id,date,label)
+    );
     CREATE TABLE IF NOT EXISTS bookings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       reference TEXT UNIQUE,
@@ -226,6 +241,94 @@ export function migrate() {
       recorded_by INTEGER REFERENCES users(id),
       recorded_at TEXT
     );
+    CREATE TABLE IF NOT EXISTS booking_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      booking_request_id INTEGER REFERENCES booking_requests(id) ON DELETE CASCADE,
+      booking_id INTEGER REFERENCES bookings(id) ON DELETE CASCADE,
+      sender_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      body TEXT NOT NULL,
+      message_type TEXT NOT NULL DEFAULT 'text' CHECK(message_type IN ('text','system')),
+      read_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CHECK((booking_request_id IS NOT NULL) != (booking_id IS NOT NULL))
+    );
+    CREATE TABLE IF NOT EXISTS booking_quotes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      booking_request_id INTEGER NOT NULL UNIQUE REFERENCES booking_requests(id) ON DELETE CASCADE,
+      version INTEGER NOT NULL DEFAULT 1,
+      title TEXT NOT NULL,
+      meeting_location TEXT NOT NULL,
+      meeting_time TEXT,
+      itinerary_json TEXT NOT NULL DEFAULT '[]',
+      inclusions_json TEXT NOT NULL DEFAULT '[]',
+      exclusions_json TEXT NOT NULL DEFAULT '[]',
+      guide_notes TEXT,
+      currency TEXT NOT NULL DEFAULT 'INR',
+      amount INTEGER NOT NULL,
+      valid_until TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'sent' CHECK(status IN ('draft','sent','accepted','declined','expired','superseded')),
+      accepted_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS booking_lifecycle_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+      actor_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      event_type TEXT NOT NULL,
+      from_status TEXT,
+      to_status TEXT NOT NULL,
+      note TEXT,
+      metadata_json TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS promotion_links (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      guide_id INTEGER NOT NULL REFERENCES guide_profiles(id) ON DELETE CASCADE,
+      event_id INTEGER REFERENCES guide_events(id) ON DELETE SET NULL,
+      code TEXT NOT NULL UNIQUE,
+      campaign_name TEXT NOT NULL,
+      location_label TEXT,
+      channel TEXT NOT NULL DEFAULT 'direct',
+      click_count INTEGER NOT NULL DEFAULT 0,
+      booking_count INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','paused')),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS promotion_clicks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      promotion_link_id INTEGER NOT NULL REFERENCES promotion_links(id) ON DELETE CASCADE,
+      referrer TEXT,
+      user_agent TEXT,
+      clicked_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS behavior_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      anonymous_id TEXT NOT NULL,
+      session_id TEXT NOT NULL,
+      user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      event_name TEXT NOT NULL,
+      page_type TEXT,
+      page_slug TEXT,
+      entity_type TEXT,
+      entity_id TEXT,
+      metadata_json TEXT NOT NULL DEFAULT '{}',
+      referrer_host TEXT,
+      utm_source TEXT,
+      utm_medium TEXT,
+      utm_campaign TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      target_url TEXT,
+      read_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
     CREATE INDEX IF NOT EXISTS idx_availability_guide_date ON availability(guide_id,date);
     CREATE INDEX IF NOT EXISTS idx_bookings_traveler ON bookings(traveler_id,status);
     CREATE INDEX IF NOT EXISTS idx_bookings_guide ON bookings(guide_id,status);
@@ -233,7 +336,45 @@ export function migrate() {
     CREATE INDEX IF NOT EXISTS idx_requests_traveler_status ON booking_requests(traveler_id,status,created_at);
     CREATE INDEX IF NOT EXISTS idx_invitations_inviter ON invitations(inviter_user_id,status,created_at);
     CREATE INDEX IF NOT EXISTS idx_guide_events_guide_status ON guide_events(guide_id,status,start_date);
+    CREATE INDEX IF NOT EXISTS idx_messages_request ON booking_messages(booking_request_id,created_at);
+    CREATE INDEX IF NOT EXISTS idx_messages_booking ON booking_messages(booking_id,created_at);
+    CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id,read_at,created_at);
+    CREATE INDEX IF NOT EXISTS idx_quotes_request_status ON booking_quotes(booking_request_id,status);
+    CREATE INDEX IF NOT EXISTS idx_slots_guide_date ON availability_slots(guide_id,date,status,visibility);
+    CREATE INDEX IF NOT EXISTS idx_lifecycle_booking ON booking_lifecycle_events(booking_id,created_at,id);
+    CREATE INDEX IF NOT EXISTS idx_promotion_guide ON promotion_links(guide_id,status,created_at);
+    CREATE INDEX IF NOT EXISTS idx_promotion_clicks ON promotion_clicks(promotion_link_id,clicked_at);
+    CREATE INDEX IF NOT EXISTS idx_behavior_event_time ON behavior_events(event_name,created_at);
+    CREATE INDEX IF NOT EXISTS idx_behavior_session ON behavior_events(session_id,created_at);
   `);
+  const requestColumns=new Set(db.prepare('PRAGMA table_info(booking_requests)').all().map(row=>row.name));
+  if(!requestColumns.has('slot_label'))db.exec("ALTER TABLE booking_requests ADD COLUMN slot_label TEXT NOT NULL DEFAULT 'Full day'");
+  if(!requestColumns.has('slot_start_time'))db.exec('ALTER TABLE booking_requests ADD COLUMN slot_start_time TEXT');
+  if(!requestColumns.has('slot_end_time'))db.exec('ALTER TABLE booking_requests ADD COLUMN slot_end_time TEXT');
+  if(!requestColumns.has('promotion_link_id'))db.exec('ALTER TABLE booking_requests ADD COLUMN promotion_link_id INTEGER REFERENCES promotion_links(id)');
+  const eventColumns=new Set(db.prepare('PRAGMA table_info(guide_events)').all().map(row=>row.name));
+  if(!eventColumns.has('capacity'))db.exec('ALTER TABLE guide_events ADD COLUMN capacity INTEGER NOT NULL DEFAULT 6');
+  if(!eventColumns.has('price'))db.exec('ALTER TABLE guide_events ADD COLUMN price INTEGER NOT NULL DEFAULT 0');
+  if(!eventColumns.has('meeting_location'))db.exec('ALTER TABLE guide_events ADD COLUMN meeting_location TEXT');
+  const applicationColumns=new Set(db.prepare('PRAGMA table_info(guide_applications)').all().map(row=>row.name));
+  if(!applicationColumns.has('service_areas_json'))db.exec("ALTER TABLE guide_applications ADD COLUMN service_areas_json TEXT NOT NULL DEFAULT '[]'");
+  if(!applicationColumns.has('government_documents_json'))db.exec("ALTER TABLE guide_applications ADD COLUMN government_documents_json TEXT NOT NULL DEFAULT '[]'");
+  if(!applicationColumns.has('document_verification_status'))db.exec("ALTER TABLE guide_applications ADD COLUMN document_verification_status TEXT NOT NULL DEFAULT 'pending'");
+  if(!applicationColumns.has('documents_verified_by'))db.exec('ALTER TABLE guide_applications ADD COLUMN documents_verified_by INTEGER REFERENCES users(id)');
+  if(!applicationColumns.has('documents_verified_at'))db.exec('ALTER TABLE guide_applications ADD COLUMN documents_verified_at TEXT');
+  const guideColumns=new Set(db.prepare('PRAGMA table_info(guide_profiles)').all().map(row=>row.name));
+  if(!guideColumns.has('service_areas_json'))db.exec("ALTER TABLE guide_profiles ADD COLUMN service_areas_json TEXT NOT NULL DEFAULT '[]'");
+  if(!guideColumns.has('government_verified'))db.exec('ALTER TABLE guide_profiles ADD COLUMN government_verified INTEGER NOT NULL DEFAULT 0');
+  if(!guideColumns.has('verification_level'))db.exec("ALTER TABLE guide_profiles ADD COLUMN verification_level TEXT NOT NULL DEFAULT 'unverified'");
+  db.exec("UPDATE guide_profiles SET verification_level='identity_verified' WHERE government_verified=1 AND verification_level='unverified'");
+  db.exec("CREATE TRIGGER IF NOT EXISTS set_guide_identity_verification AFTER INSERT ON guide_profiles WHEN NEW.government_verified=1 BEGIN UPDATE guide_profiles SET verification_level='identity_verified' WHERE id=NEW.id; END");
+  const bookingColumns=new Set(db.prepare('PRAGMA table_info(bookings)').all().map(row=>row.name));
+  if(!bookingColumns.has('operational_status'))db.exec("ALTER TABLE bookings ADD COLUMN operational_status TEXT NOT NULL DEFAULT 'confirmed'");
+  if(!bookingColumns.has('pending_start_date'))db.exec('ALTER TABLE bookings ADD COLUMN pending_start_date TEXT');
+  if(!bookingColumns.has('pending_end_date'))db.exec('ALTER TABLE bookings ADD COLUMN pending_end_date TEXT');
+  if(!bookingColumns.has('change_requested_by'))db.exec('ALTER TABLE bookings ADD COLUMN change_requested_by INTEGER REFERENCES users(id)');
+  if(!bookingColumns.has('change_reason'))db.exec('ALTER TABLE bookings ADD COLUMN change_reason TEXT');
+  db.exec("UPDATE bookings SET operational_status=CASE status WHEN 'completed' THEN 'completed' WHEN 'cancelled' THEN 'cancelled' WHEN 'refunded' THEN 'cancelled' ELSE 'confirmed' END WHERE operational_status IS NULL OR operational_status='confirmed'");
 }
 
 function insertUser({ role, name, email, phone = '', password }) {
@@ -288,6 +429,7 @@ export function seed() {
     const unavailable = [3,7,8,9,18,19,20,21,22,27,28].map(d=>((d+guide.id*2-1)%31)+1);
     if (!unavailable.includes(day)) addAvailability.run(guide.id, `2026-10-${String(day).padStart(2,'0')}`, 'available');
   }
+  db.exec(`INSERT OR IGNORE INTO availability_slots(guide_id,date,label,start_time,end_time,capacity,booked_count,visibility,status) SELECT guide_id,date,'Full day','06:00','17:00',12,CASE WHEN status='booked' THEN 12 ELSE 0 END,'public',CASE WHEN status='blocked' THEN 'blocked' ELSE 'open' END FROM availability`);
   if (!db.prepare("SELECT id FROM bookings WHERE reference='FMG-1028'").get()) {
     db.prepare(`INSERT INTO bookings(reference,traveler_id,guide_id,start_date,end_date,travelers,focus,message,daily_rate,subtotal,service_fee,total,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`)
       .run('FMG-1028', travelerId, ravi.id, '2026-06-16', '2026-06-18', 2, 'Birding', 'A slow-paced monsoon birding trip.', 5500, 16500, 825, 17325, 'completed');

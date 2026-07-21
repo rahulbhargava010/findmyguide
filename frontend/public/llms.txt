@@ -1,0 +1,15 @@
+# Chirps & Roar
+
+Chirps & Roar helps travelers discover verified local birding, wildlife, tracking and nature guides, check public availability, talk directly, and request a booking. Guides confirm requests; payments are arranged directly with the guide and only recorded operationally by the platform.
+
+## Canonical public resources
+- Homepage and guide search: /
+- Location collections: /location/{location-slug}
+- Specialty collections: /specialty/{specialty-slug}
+- Current index: /sitemap.xml
+
+## Trust and data notes
+- Only approved guide profiles appear publicly.
+- Ratings come from reviews tied to completed platform bookings.
+- Availability and event details are supplied by guides and may change.
+- Collection pages exist only when real approved inventory exists.
