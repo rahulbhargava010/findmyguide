@@ -24,7 +24,8 @@ migrate();
 seed();
 
 async function serveFrontend(res, url) {
-  const pathname = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname);
+  const discoveryPath=/^\/(location|specialty)\/[a-z0-9-]+\/?$/.test(url.pathname);
+  const pathname = decodeURIComponent(discoveryPath ? '/discover.html' : url.pathname === '/' ? '/index.html' : url.pathname);
   const safe = normalize(pathname).replace(/^([.][.][/\\])+/, '').replace(/^[/\\]+/, '');
   if (safe.startsWith('.') || safe.includes('../')) return false;
   const file = join(FRONTEND_ROOT, safe);
@@ -48,10 +49,11 @@ async function serveFrontend(res, url) {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || `${HOST}:${PORT}`}`);
+  if (url.pathname === '/sitemap.xml') { url.pathname='/api/seo/sitemap.xml'; return handleApiRequest(req,res,url); }
   if (url.pathname.startsWith('/api/')) return handleApiRequest(req, res, url);
   if (await serveFrontend(res, url)) return;
   res.writeHead(404, {'Content-Type':'text/plain; charset=utf-8'});
   res.end('Not found');
 });
 
-server.listen(PORT, HOST, () => console.log(`FindMyGuide running at http://${HOST}:${PORT}`));
+server.listen(PORT, HOST, () => console.log(`Chirps & Roar running at http://${HOST}:${PORT}`));

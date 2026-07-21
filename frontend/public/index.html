@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#173f35" />
-  <title>FindMyGuide — Go wild, with someone who knows</title>
+  <title>Chirps & Roar — Go wild, with someone who knows</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
@@ -12,8 +12,8 @@
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="#top" aria-label="FindMyGuide home">
-      <span class="brand-mark">F</span><span>FindMyGuide</span>
+    <a class="brand" href="#top" aria-label="Chirps & Roar home">
+      <span class="brand-mark">CR</span><span>Chirps & Roar</span>
     </a>
     <nav class="desktop-nav" aria-label="Main navigation">
       <a href="#explore">Explore</a><a href="#how">How it works</a><a href="#stories">Field notes</a>
@@ -33,7 +33,7 @@
         <h1>Go wild, with someone who <em>knows.</em></h1>
         <p>Meet local experts for birding, wildlife, herping and trails. Compare openly, check real availability, and plan a trip that feels personal.</p>
         <form class="search-card" id="heroSearch">
-          <label><span>Search guides or places</span><input id="locationInput" type="search" list="searchSuggestions" autocomplete="off" placeholder="City, reserve, state or guide name" /><datalist id="searchSuggestions"><option value="Ravi Menon"><option value="Thattekad"><option value="Kerala"><option value="Meera Joshi"><option value="Bera"><option value="Rajasthan"><option value="Satpura"><option value="Agumbe"><option value="Sikkim"><option value="Arunachal Pradesh"><option value="Birding"><option value="Wildlife tracking"></datalist></label>
+          <label><span>Search guides, places or events</span><input id="locationInput" type="search" list="searchSuggestions" autocomplete="off" placeholder="Guide, city, reserve, activity or event" /><datalist id="searchSuggestions"><option value="Ravi Menon"><option value="Thattekad Dawn Bird Walk"><option value="Kerala birdwatching"><option value="Bera Leopard Tracking Weekend"><option value="Jawai Photography Safari"><option value="Eaglenest Birding Expedition"><option value="Agumbe Night Herping Trail"><option value="Satpura Canoe Safari"><option value="Sikkim Rhododendron Trek"><option value="Family wildlife camp"><option value="Birding"><option value="Wildlife tracking"></datalist></label>
           <label><span>What are you into?</span><select id="interestInput"><option value="all">All experiences</option><option>Birding</option><option>Wildlife</option><option>Herping</option><option>Hiking</option></select></label>
           <button class="search-button" type="submit" aria-label="Search">↗</button>
         </form>
@@ -54,16 +54,18 @@
     <section class="section explore" id="explore">
       <div class="section-heading"><div><span class="kicker">PEOPLE WHO KNOW THE WILD</span><h2>Find your kind of guide</h2></div><a href="#explore" id="viewAll">View all 24 guides <span>↗</span></a></div>
       <div class="filter-row" id="filters"><button class="filter active" data-filter="all">All guides</button><button class="filter" data-filter="Birding">Birding</button><button class="filter" data-filter="Wildlife">Wildlife</button><button class="filter" data-filter="Herping">Herping</button><button class="filter" data-filter="Hiking">Trails & hikes</button></div>
+      <p class="search-summary" id="searchSummary" aria-live="polite"></p>
       <div class="guide-grid" id="guideGrid"></div>
     </section>
 
     <section class="section destinations">
       <div class="section-heading"><div><span class="kicker">FOLLOW THE SEASON</span><h2>Where the wild is calling</h2></div><p>Handpicked landscapes, best explored with someone local.</p></div>
       <div class="destination-grid">
-        <article class="destination d1"><div><span>WINTER FAVOURITE</span><h3>Keoladeo</h3><p>Rajasthan · 14 guides</p></div></article>
-        <article class="destination d2"><div><span>BIG CAT COUNTRY</span><h3>Satpura</h3><p>Madhya Pradesh · 9 guides</p></div></article>
-        <article class="destination d3"><div><span>RAINFOREST LIFE</span><h3>Agumbe</h3><p>Karnataka · 7 guides</p></div></article>
+        <a href="/location/bera"><article class="destination d1"><div><span>LEOPARD COUNTRY</span><h3>Bera</h3><p>Explore local guides ↗</p></div></article></a>
+        <a href="/location/satpura"><article class="destination d2"><div><span>BIG CAT COUNTRY</span><h3>Satpura</h3><p>Explore local guides ↗</p></div></article></a>
+        <a href="/location/agumbe"><article class="destination d3"><div><span>RAINFOREST LIFE</span><h3>Agumbe</h3><p>Explore local guides ↗</p></div></article></a>
       </div>
+      <nav class="discovery-links" aria-label="Browse guide specialties"><a href="/specialty/birding">Birding guides</a><a href="/specialty/wildlife-tracking">Wildlife tracking</a><a href="/specialty/herping">Herping guides</a><a href="/specialty/photography">Nature photography</a><a href="/specialty/hiking">Hiking guides</a><a href="/specialty/natural-history">Natural history</a></nav>
     </section>
 
     <section class="how section" id="how">
@@ -86,7 +88,7 @@
     </section>
   </main>
 
-  <footer><div class="brand footer-brand"><span class="brand-mark">F</span><span>FindMyGuide</span></div><p>Go farther. Tread lighter. Know more.</p><div><a href="#explore">Explore</a><a href="#how">About</a><a href="mailto:hello@findmyguide.in">Contact</a><a href="admin-login.html">Admin</a></div><small>© 2026 FindMyGuide · Made for the wild at heart.</small></footer>
+  <footer><div class="brand footer-brand"><span class="brand-mark">CR</span><span>Chirps & Roar</span></div><p>Go farther. Tread lighter. Know more.</p><div><a href="#explore">Explore</a><a href="#how">About</a><a href="mailto:hello@findmyguide.in">Contact</a><a href="admin-login.html">Admin</a></div><small>© 2026 Chirps & Roar · Made for the wild at heart.</small></footer>
 
   <dialog id="guideDialog" class="dialog"><button class="close" aria-label="Close">×</button><div id="dialogContent"></div></dialog>
   <dialog id="bookingDialog" class="dialog booking-dialog"><button class="close" aria-label="Close booking form">×</button><div class="booking-header"><span class="kicker">REQUEST A VERIFIED GUIDE</span><h2>Plan with <span id="bookingGuideName">your guide</span></h2><p>Choose only from dates the guide has opened.</p></div><div class="booking-layout"><section><div class="selected-guide-mini"><div class="avatar" id="bookingGuideAvatar"></div><div><b id="bookingGuideLabel"></b><span id="bookingGuideMeta"></span></div><strong id="bookingGuideRating"></strong></div><div class="booking-calendar-head"><div><h3>October 2026</h3><p>Select a start date, then an end date.</p></div><div><span><i></i>Available</span></div></div><div class="public-booking-calendar" id="publicBookingCalendar"></div><div class="date-selection" id="dateSelection">No dates selected</div></section><form id="guideBookingForm"><label>Number of travelers <b>*</b><select id="bookingTravelers" required><option value="1">1 traveler</option><option value="2" selected>2 travelers</option><option value="3">3 travelers</option><option value="4">4 travelers</option><option value="5">5 travelers</option><option value="6">6 travelers</option></select></label><label>Trip focus <b>*</b><select id="bookingFocus" required><option value="">Choose an interest</option><option>Birding</option><option>Wildlife tracking</option><option>Herping</option><option>Photography</option><option>Forest hiking</option></select></label><label>Message for your guide<textarea id="bookingMessage" placeholder="Share your experience level, target species, preferred pace, accessibility needs…"></textarea></label><div class="price-breakdown"><h3>Estimated guide fee</h3><span><i><b id="priceDays">0</b> guide days × <b id="priceDaily">₹0</b></i><strong id="priceSubtotal">₹0</strong></span><span><i>No platform fee</i><strong id="priceFee">₹0</strong></span><span class="price-total"><i>Estimated total</i><strong id="priceTotal">₹0</strong></span><small>Accommodation, permits and transport are not included unless stated by the guide. Payment is arranged directly after confirmation.</small></div><label class="booking-consent"><input type="checkbox" required><span>I understand this is a request, not a confirmed booking, and payment will be arranged directly with the guide.</span></label><button class="button button-dark" type="submit">Send booking request ↗</button><p class="payment-note">The guide will accept or decline within 24 hours. Dates are reserved only after acceptance.</p></form></div></dialog>
@@ -103,7 +105,7 @@
     <section class="admin-panel" data-panel="profile"><h3>Profile completeness</h3><div class="profile-complete"><b>86%</b><span><i></i></span></div><p>Your profile is live. Add two more location photos and a second work language to improve matching.</p><button class="button button-dark">Edit public profile</button></section>
   </dialog>
   <div class="toast" id="toast" role="status"></div>
-  <script src="app.js"></script>
+  <script src="analytics.js"></script><script src="analytics-events.js"></script><script src="onboarding-extensions.js"></script><script src="app.js"></script>
 </body>
 </html>
-<!-- FindMyGuide public application -->
+<!-- Chirps & Roar public application -->

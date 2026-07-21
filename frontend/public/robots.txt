@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin-login.html
+Disallow: /guide-admin.html
+Disallow: /traveler-panel.html
+Disallow: /website-admin.html
+Sitemap: https://chirpsandroar.com/sitemap.xml

@@ -1,2 +1,2 @@
 sessionStorage.removeItem('fmgCheckout');
-// FindMyGuide frontend module.
+// Chirps & Roar frontend module.

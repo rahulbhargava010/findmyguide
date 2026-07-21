@@ -1,6 +1,5 @@
 import type { Config, Context } from '@netlify/functions';
-import { withDatabaseContext } from '../../backend/database/database.mjs';
-import { handleApiRequest } from '../../backend/routes/index.mjs';
+import { getDeployStore, getStore } from '@netlify/blobs';
 
 class RequestAdapter {
   method: string;
@@ -14,7 +13,7 @@ class RequestAdapter {
   }
 
   async *[Symbol.asyncIterator]() {
-    if (this.#body.length) yield this.#body;
+    if (this.#body.length) yield new TextDecoder().decode(this.#body);
   }
 }
 
@@ -40,17 +39,35 @@ class ResponseAdapter {
   }
 }
 
-export default async (request: Request, _context: Context) => {
+async function processRequest(request: Request, context: Context) {
+  const store = context.deploy.context === 'production'
+    ? getStore('findmyguide-data', { consistency: 'strong' })
+    : getDeployStore('findmyguide-data');
+  const snapshot = await store.get('database.sqlite', { type: 'arrayBuffer' });
+  const database = await import('../../backend/database/database.mjs');
+  await database.loadDatabaseSnapshot(snapshot);
+  const { handleApiRequest } = await import('../../backend/routes/index.mjs');
   const requestBody = new Uint8Array(await request.arrayBuffer());
   const req = new RequestAdapter(request, requestBody);
   const res = new ResponseAdapter();
   const url = new URL(request.url);
 
-  await withDatabaseContext(() => handleApiRequest(req, res, url));
+  try {
+    await database.withDatabaseContext(() => handleApiRequest(req, res, url));
+  } finally {
+    await store.set('database.sqlite', await database.createDatabaseSnapshot());
+  }
   return new Response(res.body, { status: res.status, headers: res.headers });
+}
+
+let requestQueue = Promise.resolve<Response>(new Response());
+
+export default (request: Request, context: Context) => {
+  const result = requestQueue.then(() => processRequest(request, context));
+  requestQueue = result.catch(() => new Response());
+  return result;
 };
 
 export const config: Config = {
   path: '/api/*'
 };
-
